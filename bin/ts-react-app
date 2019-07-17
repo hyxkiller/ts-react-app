@@ -16,8 +16,11 @@ const template = "direct:https://github.com/hyxkiller/ts-react-project.git";
 const download = require('download-git-repo');
 // 获取用户的目录
 const userHome = require('user-home');
+// 获取package.json中的版本号
+const result = shelljs.grep('version', 'package.json');
+const res = result.stdout.split(":")[1];
+const version = res.slice(2, res.length - 3);
 
-const version = '0.0.1';
 const input = [
 	"        |         ",
 	"       / \\        ",
