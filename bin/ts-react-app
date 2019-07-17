@@ -1,0 +1,90 @@
+#!/usr/bin/env node
+
+const program = require('commander');
+const Printer = require('@darkobits/lolcatjs');
+// 与用户对话
+const chalk = require('chalk');
+// 与用户交互
+const inquirer = require('inquirer');
+// 
+const shelljs = require('shelljs');
+// loading模块
+const ora = require('ora');
+// 需要准备的模板文件
+const template = "direct:https://github.com/hyxkiller/ts-react-project.git";
+// 下载git项目仓库
+const download = require('download-git-repo');
+// 获取用户的目录
+const userHome = require('user-home');
+
+const version = '0.0.1';
+const input = [
+	"        |         ",
+	"       / \\        ",
+	"      / _ \\       ",
+	"     |.o '.|      ",
+	"     |'._.'|      ",
+	"     |     |      ",
+	"   ,'|  |  |`.    ",
+	"  /  |  |  |  \\   ",
+	" |,-'--|--'-.| hyx ",
+	`  version:${version}`,
+].join('\n');
+
+program.version(Printer.default.fromString(input), '-v, --version');
+// program.command('init', '初始化');
+
+const binHandler = {
+	init() {
+		inquirer
+			.prompt([
+				/* Pass your questions in here */
+				{
+					type: 'text',
+					message: 'please enter the dirname',
+					name: 'dirname',
+				},
+				// {
+				// 	type: 'list',
+				// 	message: 'please select the language',
+				// 	choices: ['TypeScript', 'EcmaScript'],
+				// 	name: 'kind',
+				// }
+			])
+			.then(answers => {
+				const { dirname } = answers;
+				if (dirname) {
+					const spinner = ora("download...")
+					spinner.start();
+					const projectPath = `${userHome}/Desktop/${dirname}`;
+					shelljs.cd(`${userHome}/Desktop/`);
+					shelljs.rm('-rf', projectPath);
+					shelljs.mkdir(dirname);
+					download(template, projectPath, {clone: true}, (err) => {
+						spinner.stop();
+						if(err){
+							console.error("download failed", err.message.trim());
+						}else{
+							shelljs.sed('-i', "mobx-test", dirname, projectPath+'/package.json');
+							console.log(chalk.green('success!'));
+						}
+					})
+				}
+			});
+	}
+}
+
+program
+	.usage("[cmd] <options>")
+	.arguments("<cmd> [env]")
+	.action((cmd, other) => {
+		const handler = binHandler[cmd];
+		if (typeof handler === 'undefined') {
+			console.log(`不存在${chalk.red(cmd)}命令`);
+			process.exit(1);
+		} else {
+			handler(other);
+		}
+	})
+
+program.parse(process.argv);
